@@ -1,25 +1,49 @@
-var mqtt = require('mqtt');
+const mqtt = require('mqtt');
 
-var topic_s = 'topic';
-var topic_list = ['topic2', 'topic3', 'topic4'];
-var client = mqtt.connect('mqtt://127.0.0.1:1883', {
-  clientId: 'mqttjs01',
+const {
+  CLIENT_ID,
+  MQTT_BROKER_ADDRESS,
+  SUBSCRIPTION_TOPIC,
+  PUBLICATION_TOPIC,
+  QOS,
+} = require('./config');
+
+const CLIENT = mqtt.connect(MQTT_BROKER_ADDRESS, {
+  clientId: CLIENT_ID,
 });
 
-client.on('connect', function () {
-  console.log('connected');
-  console.log('connected flag  ' + client.connected);
+CLIENT.on('connect', function () {
+  console.log(`Connected: ${CLIENT.connected}`);
+
+  CLIENT.subscribe(SUBSCRIPTION_TOPIC, { qos: QOS }, function (error) {
+    if (error) {
+      console.log(`Could Not Subscribe To "${SUBSCRIPTION_TOPIC}": ${error.message}`);
+    } else {
+      console.log(`Subscribed To "${SUBSCRIPTION_TOPIC}"`);
+    }
+  });
+
+  CLIENT.subscribe(PUBLICATION_TOPIC, { qos: QOS }, function (error) {
+    if (error) {
+      console.log(`Could Not Subscribe To "${PUBLICATION_TOPIC}": ${error.message}`);
+    } else {
+      console.log(`Subscribed To "${PUBLICATION_TOPIC}"`);
+
+      CLIENT.publish(PUBLICATION_TOPIC, 'testPublication', function (error) {
+        if (error) {
+          console.log(`Could Not Publish To "${PUBLICATION_TOPIC}": ${error.message}`);
+        } else {
+          console.log(`Published To "${PUBLICATION_TOPIC}"`);
+        }
+      });
+    }
+  });
 });
 
-client.on('error', function (error) {
-  console.log("Can't connect" + error);
+CLIENT.on('error', function (error) {
+  console.log(`Error: ${error.message}`);
 });
 
-client.publish(topic_s, 'Hey there');
-
-client.subscribe(topic_s, { qos: 1 });
-client.subscribe(topic_list, { qos: 1 });
-
-client.on('message', function (topic, message) {
-  console.log('message is ' + message + ', topic is ' + topic);
+CLIENT.on('message', function (topic, message) {
+  console.log(`Received A Message =>> Topic: ${topic}, Message: ${message.toString()}`);
 });

@@ -1,0 +1,8 @@
+{
+  "env": "LOCAL",
+  "mqttBrokerAddress": "",
+  "mqttClientId": "",
+  "subscriptionTopic": "",
+  "publicationTopic": "",
+  "qos": 1
+}
